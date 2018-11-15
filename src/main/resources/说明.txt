@@ -1,0 +1,90 @@
+spring：最基本的包  core , content , bean , 在启动服务器 时需要 common log，在加载 容器时 需要 expression（spring 的标签语言），aop模块（面向切面编程）
+
+开发网站：web （ webmvc，如果用 struts 插件 这个就不用了,spring 整合 Struts时  用 Struts 提供的整合 插件） 
+
+Apache common 项目 ，就是 将通用 共享模块进行 整理和发布
+
+=============================
+所以 spring 容器 最基本的包：
+core、content、bean、common log、expression、aop、web
+如果要 springmvc 模块，需要添加 webmvc.jar 包
+=============================
+整合mybatis时，需要：
+
+1、spring-tx 【解析 基于注解的事务】
+2、mybatis 核心包，mybatis-spring 框架整合包
+3、mysql-connector 数据库 连接包
+
+=====================================
+spring 容器 配置中：需要 spring-tx.jar 【用于解析 基于注解的事务】
+
+<!-- 开启基于注解的事务 -->
+<tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>
+	
+
+org.springframework.beans.factory.parsing.BeanDefinitionParsingException: Configuration problem: Unable to locate Spring NamespaceHandler for XML schema namespace [http://www.springframework.org/schema/tx]
+Offending resource: class path resource [applicationContext.xml]
+
+=============================================
+
+	<!-- 引入数据库的配置文件 -->
+	<context:property-placeholder location="classpath:dbconfig.properties" />
+	<!-- Spring用来控制业务逻辑。数据源、事务控制、aop -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="driverClass" value="${jdbc.driver}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+
+发现，缺少 spring-jdbc 模块 ，需要添加 spring-jdbc.jar
+
+
+SEVERE: Context initialization failed
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'employeeService': Unsatisfied dependency expressed through field 'employeeMapper'; nested exception is org.springframework.beans.factory.CannotLoadBeanClassException: Cannot find class [org.springframework.jdbc.datasource.DriverManagerDataSource] for bean with name 'dataSource' defined in class path resource [applicationContext.xml]; nested exception is java.lang.ClassNotFoundException: org.springframework.jdbc.datasource.DriverManagerDataSource
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:588)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:88)
+
+===============================================
+
+Spring 的校验模块： 
+在tomcat 运行环境下  需要添加
+validation-api-1.1.0.CR1.jar
+hibernate-validator-5.0.0.CR2.jar
+hibernate-validator-annotation-processor-5.0.0.CR2.jar
+classmate.jar
+============== 
+当junit 单元测试时，用的是maven 构建
+发现 hibernate-validator  validation-api
+但是单元测试报错，然后用添加了 el-api 和 el-impl 两个jar包
+
+==============
+maven项目依赖，有的是自动添加的，比如 hamcrest 这个是 junit4 引入的框架。
+
+
+=================================================================
+本地网站连接本地mysql  ，ssl是支持的不会报错
+
+jdbc.url=jdbc:mysql://localhost:3306/ssm-crud?useUnicode=true&characterEncoding=UTF-8&useSSL=true
+
+************************************
+
+本地网站连接别的主机的mysql
+
+jdbc.url=jdbc:mysql://112.112.112.112:3306/ssm-crud?useUnicode=true&characterEncoding=UTF-8&useSSL=true
+
+
+The last packet successfully received from the server was 764 milliseconds ago.  The last packet sent successfully to the server was 757 milliseconds ago.] with root cause
+sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:141)
+
+
+mysql  useSSL=true 问题，因为安装 mysql的时候，它会在本机 导入mysql的证书，所以可以使用 ssl 连接mysql。但是网站需要连接 别的主机时，ssl证书 没有，所以就报错了。
+
+解决办法就是：去掉 &useSSL=true
+jdbc.url=jdbc:mysql://112.112.112.112:3306/ssm-crud?useUnicode=true&characterEncoding=UTF-8
+
+Tue Nov 06 15:51:39 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+
+
+
