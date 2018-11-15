@@ -1,3 +1,4 @@
+
 package com.ssm.crud.bean;
 
 public class Department {
